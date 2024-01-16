@@ -12,6 +12,7 @@ namespace TollCalculatorUTs
     {
         private IConfiguration _configuration;
         private IConfiguration _emptyConfiguration;
+        private IConfiguration _emptyConfiguration2;
 
         [TestInitialize()]
         public void TestInitialize()
@@ -21,8 +22,12 @@ namespace TollCalculatorUTs
                 { "MinTimeBetweenCharges",  "60" }
             };
             _configuration = new ConfigurationBuilder().AddInMemoryCollection(inMemorySettings).Build();
+
             var emptyInMemorySettings = new Dictionary<string, string> { };
             _emptyConfiguration = new ConfigurationBuilder().AddInMemoryCollection(emptyInMemorySettings).Build();
+
+            var emptyInMemorySettings2 = new Dictionary<string, string> { { "MinTimeBetweenCharges", "60" } };
+            _emptyConfiguration2 = new ConfigurationBuilder().AddInMemoryCollection(emptyInMemorySettings2).Build();
         }
 
         #region IsTollFreeVehicle
@@ -367,6 +372,21 @@ namespace TollCalculatorUTs
 
             //Assert 
             Assert.AreEqual(-2, result);
+        }
+
+        [TestMethod]
+        public void GetTollFeeNDates_EmptyConfigs2_ReturnsNegative3()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime[] date = [new DateTime(2024, 1, 16, 6, 00, 00)]; //week day
+
+            //Act
+            var tc = new TollCalculator(_emptyConfiguration2);
+            int result = tc.GetTollFeeNDates(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(-3, result);
         }
 
         [TestMethod]
