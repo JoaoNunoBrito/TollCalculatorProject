@@ -1,6 +1,9 @@
 ﻿using PublicHoliday;
+using System;
+using System.Globalization;
 using TollFeeCalculator.Entities;
 using TollFeeCalculator.Vehicles;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using static TollFeeCalculator.Entities.Enums.VehicleEnums;
 
 namespace TollFeeCalculator
@@ -36,20 +39,27 @@ namespace TollFeeCalculator
          */
         public int GetTollFee(Vehicle vehicle, DateTime[] dates)
         {
-            DateTime intervalStart = dates[0];
+            //Check if all dates are the same day
+            if (!dates.All(dt => dt.Date == dates[0].Date))
+                return -1;
+
+            //Ensure dates are ordered correctly
+            dates = dates.OrderBy(d => d.TimeOfDay).ToArray();
+
             int totalFee = 0;
+            DateTime intervalStart = dates[0];
             foreach (DateTime date in dates)
             {
                 int nextFee = GetTollFee(vehicle, date);
                 int tempFee = GetTollFee(vehicle, intervalStart);
 
-                long diffInMillies = date.Millisecond - intervalStart.Millisecond;
-                long minutes = diffInMillies / 1000 / 60;
+                TimeSpan ts = date - intervalStart;
+                double minutes = ts.TotalMinutes;
 
                 if (minutes <= 60)
                 {
                     if (totalFee > 0) totalFee -= tempFee;
-                    if (nextFee >= tempFee) tempFee = nextFee;
+                    if (nextFee >= tempFee) tempFee = nextFee; //Choose highest of the fees
                     totalFee += tempFee;
                 }
                 else

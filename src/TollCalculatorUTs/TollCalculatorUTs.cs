@@ -123,7 +123,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 0);
+            Assert.AreEqual(0, result);
         }
 
         [TestMethod]
@@ -138,7 +138,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 0);
+            Assert.AreEqual(0, result);
         }
 
         [TestMethod]
@@ -153,7 +153,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 0);
+            Assert.AreEqual(0, result);
         }
 
         [TestMethod]
@@ -168,7 +168,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 0);
+            Assert.AreEqual(0, result);
         }
 
         [TestMethod]
@@ -183,7 +183,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 9);
+            Assert.AreEqual(9, result);
         }
 
         [TestMethod]
@@ -198,7 +198,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 16);
+            Assert.AreEqual(16, result);
         }
 
         [TestMethod]
@@ -213,7 +213,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 22);
+            Assert.AreEqual(22, result);
         }
 
         [TestMethod]
@@ -228,7 +228,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 16);
+            Assert.AreEqual(16, result);
         }
 
         [TestMethod]
@@ -243,7 +243,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 9);
+            Assert.AreEqual(9, result);
         }
 
         [TestMethod]
@@ -258,7 +258,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 16);
+            Assert.AreEqual(16, result);
         }
 
         [TestMethod]
@@ -273,7 +273,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 22);
+            Assert.AreEqual(22, result);
         }
 
         [TestMethod]
@@ -288,7 +288,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 16);
+            Assert.AreEqual(16, result);
         }
 
         [TestMethod]
@@ -303,7 +303,7 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 9);
+            Assert.AreEqual(9, result);
         }
 
         [TestMethod]
@@ -318,9 +318,95 @@ namespace TollCalculatorUTs
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
-            Assert.AreEqual(result, 0);
+            Assert.AreEqual(0, result);
         }
 
         #endregion
+
+        #region GetTollFee (Multiple dates)
+
+        [TestMethod]
+        public void GetTollFee2_DifferentDays_ReturnsNegative1()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime[] date = [new DateTime(2024, 1, 16, 6, 00, 00), new DateTime(2024, 1, 17, 6, 00, 00)]; //different days
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(-1, result);
+        }
+
+        [TestMethod]
+        public void GetTollFee2_OneDate_Returns9()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime[] date = [new DateTime(2024, 1, 16, 6, 00, 00)]; //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(9, result);
+        }
+
+        [TestMethod]
+        public void GetTollFee2_TwoDates_Returns31()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime[] date = [new DateTime(2024, 1, 16, 7, 01, 00), new DateTime(2024, 1, 16, 6, 00, 00)]; //week days
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(9 + 22, result);
+        }
+
+        [TestMethod]
+        public void GetTollFee2_TwoDatesSameHour_Returns22()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime[] date = [new DateTime(2024, 1, 16, 6, 00, 00), new DateTime(2024, 1, 16, 7, 00, 00)]; //week days
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(22, result);
+        }
+
+        [TestMethod]
+        public void GetTollFee2_Exceedes60_Returns60()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime[] date = [
+                new DateTime(2024, 1, 16, 6, 00, 00),
+                new DateTime(2024, 1, 16, 7, 01, 00),
+                new DateTime(2024, 1, 16, 8, 02, 00),
+                new DateTime(2024, 1, 16, 15, 01, 00),
+                new DateTime(2024, 1, 16, 18, 01, 00)
+            ]; //week days
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(60, result);
+        }
+
+        #endregion
+
     }
 }
