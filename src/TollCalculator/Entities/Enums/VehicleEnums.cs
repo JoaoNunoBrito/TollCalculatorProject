@@ -4,16 +4,16 @@
     {
         public enum VehicleTypeEnum
         {
-            Car = 0,
-            Truck = 1,
-            SUV = 2,
-            Motorbike = 3,
-            Tractor = 4,
-            Emergency = 5,
-            Diplomat = 6,
-            Foreign = 7,
-            Military = 8,
-            Others = 9
+            Car,
+            Truck,
+            SUV,
+            Motorbike,
+            Tractor,
+            Emergency,
+            Diplomat,
+            Foreign,
+            Military,
+            Others
         }
 
         //Subset of VehicleTypeEnum. Ensure that the Vehicles' name below matches the name in VehicleTypeEnum

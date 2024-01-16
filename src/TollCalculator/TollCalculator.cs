@@ -72,12 +72,18 @@ namespace TollFeeCalculator
             string? maxFeeConfig = _configuration.GetSection("MaxFeeAmount").Value;
             if (string.IsNullOrWhiteSpace(maxFeeConfig)) return -2;
             int maxFeeAmount = Int32.Parse(maxFeeConfig);
-
             if (totalFee > maxFeeAmount) totalFee = maxFeeAmount;
 
             return totalFee;
         }
 
+        /**
+         * Calculate the toll fee for one pass
+         *
+         * @param vehicle - the vehicle
+         * @param date   - date and time of the pass
+         * @return - the toll fee for that pass
+         */
         public int GetTollFee(Vehicle vehicle, DateTime date)
         {
             //Free days/vehicles
@@ -94,7 +100,8 @@ namespace TollFeeCalculator
         private static bool IsTollFreeVehicle(VehicleTypeEnum vehicleType)
         {
             //Check if vehicleType is in whitelist
-            if (Enum.IsDefined(typeof(TollFreeVehicles), vehicleType.ToString())) return true;
+            if (Enum.IsDefined(typeof(TollFreeVehicles), vehicleType.ToString())) 
+                return true;
 
             //Pay if not on whitelist
             return false;

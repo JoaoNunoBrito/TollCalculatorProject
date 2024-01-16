@@ -1,6 +1,8 @@
-﻿namespace TollFeeCalculator.Vehicles
+﻿using TollFeeCalculator.Entities.Interfaces;
+
+namespace TollFeeCalculator.Vehicles
 {
-    public class Car
+    public class Car : IVehicle
     {
 
     }
