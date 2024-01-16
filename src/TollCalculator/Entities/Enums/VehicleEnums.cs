@@ -16,15 +16,15 @@
             Others = 9
         }
 
-        //Subset of VehicleTypeEnum. Ensure that the Vehicles' int below matches the int in VehicleTypeEnum
+        //Subset of VehicleTypeEnum. Ensure that the Vehicles' name below matches the name in VehicleTypeEnum
         public enum TollFreeVehicles
         {
-            Motorbike = 3,
-            Tractor = 4,
-            Emergency = 5,
-            Diplomat = 6,
-            Foreign = 7,
-            Military = 8
+            Motorbike,
+            Tractor,
+            Emergency,
+            Diplomat,
+            Foreign,
+            Military
         }
     }
 }
