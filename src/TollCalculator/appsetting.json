@@ -1,3 +1,4 @@
 {
-  "MaxFeeAmount":  60
+  "MaxFeeAmount": 60,
+  "MinTimeBetweenCharges":  60
 }
