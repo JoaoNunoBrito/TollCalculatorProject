@@ -10,13 +10,13 @@ namespace TollCalculatorUTs
     [TestClass]
     public class TollCalculatorUTs
     {
-        private Mock<IVehicle> _vehicle;
+        //private Mock<IVehicle> _vehicle;
 
-        [TestInitialize()]
-        public void TestInitialize()
-        {
-            _vehicle = new Mock<IVehicle>();
-        }
+        //[TestInitialize()]
+        //public void TestInitialize()
+        //{
+        //    _vehicle = new Mock<IVehicle>();
+        //}
 
         #region IsTollFreeVehicle
 
@@ -54,6 +54,49 @@ namespace TollCalculatorUTs
 
             //Act
             bool result = TollCalculator.IsTollFreeVehicle(vehicle);
+
+            //Assert 
+            Assert.IsTrue(result == true);
+        }
+
+        #endregion
+
+        #region IsTollFreeDate
+
+        [TestMethod]
+        public void IsTollFreeDate_WeekDay_ReturnsFalse()
+        {
+            //Arrange
+            var date = new DateTime(2024, 1, 16); //Tuesday
+
+            //Act
+            bool result = TollCalculator.IsTollFreeDate(date);
+
+            //Assert 
+            Assert.IsTrue(result == false);
+        }
+
+        [TestMethod]
+        public void IsTollFreeDate_WeekendDay_ReturnsTrue()
+        {
+            //Arrange
+            var date = new DateTime(2024, 1, 20); //Saturday
+
+            //Act
+            bool result = TollCalculator.IsTollFreeDate(date);
+
+            //Assert 
+            Assert.IsTrue(result == true);
+        }
+
+        [TestMethod]
+        public void IsTollFreeDate_Holiday_ReturnsTrue()
+        {
+            //Arrange
+            var date = new DateTime(2024, 12, 25); //Holiday
+
+            //Act
+            bool result = TollCalculator.IsTollFreeDate(date);
 
             //Assert 
             Assert.IsTrue(result == true);
