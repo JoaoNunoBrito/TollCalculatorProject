@@ -1,8 +1,7 @@
-using Castle.Core.Configuration;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using System.Reflection;
 using TollFeeCalculator;
-using TollFeeCalculator.Entities.Interfaces;
 using TollFeeCalculator.Vehicles;
 using static TollFeeCalculator.Entities.Enums.VehicleEnums;
 
@@ -11,6 +10,18 @@ namespace TollCalculatorUTs
     [TestClass]
     public class TollCalculatorUTs
     {
+        private IConfiguration _configuration;
+        private IConfiguration _emptyConfiguration;
+
+        [TestInitialize()]
+        public void TestInitialize()
+        {
+            var inMemorySettings = new Dictionary<string, string> { {"MaxFeeAmount", "60"} };
+            _configuration = new ConfigurationBuilder() .AddInMemoryCollection(inMemorySettings).Build();
+            var emptyInMemorySettings = new Dictionary<string, string> { };
+            _emptyConfiguration = new ConfigurationBuilder().AddInMemoryCollection(emptyInMemorySettings).Build();
+        }
+
         #region IsTollFreeVehicle
 
         [TestMethod]
@@ -119,7 +130,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 12, 25, 6, 0, 0); //holiday
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -134,7 +145,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 20, 6, 0, 0); //weekend
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -149,7 +160,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 16, 6, 0, 0); //week day
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -164,7 +175,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 16, 5, 59, 59, 100); //week day
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -179,7 +190,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 16, 6, 0, 0); //week day
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -194,7 +205,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 16, 6, 30, 0); //week day
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -209,7 +220,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 16, 7, 00, 0); //week day
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -224,7 +235,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 16, 8, 00, 0); //week day
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -239,7 +250,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 16, 8, 30, 0); //week day
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -254,7 +265,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 16, 15, 00, 0); //week day
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -269,7 +280,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 16, 15, 30, 0); //week day
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -284,7 +295,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 16, 17, 00, 0); //week day
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -299,7 +310,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 16, 18, 00, 0); //week day
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -314,7 +325,7 @@ namespace TollCalculatorUTs
             DateTime date = new DateTime(2024, 1, 16, 18, 30, 0); //week day
 
             //Act
-            var tc = new TollCalculator();
+            var tc = new TollCalculator(_configuration);
             int result = tc.GetTollFee(vehicle, date);
 
             //Assert 
@@ -323,70 +334,85 @@ namespace TollCalculatorUTs
 
         #endregion
 
-        #region GetTollFee (Multiple dates)
+        #region GetTollFeeNDates (Multiple dates)
 
         [TestMethod]
-        public void GetTollFee2_DifferentDays_ReturnsNegative1()
+        public void GetTollFeeNDates_DifferentDays_ReturnsNegative1()
         {
             //Arrange
             var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
             DateTime[] date = [new DateTime(2024, 1, 16, 6, 00, 00), new DateTime(2024, 1, 17, 6, 00, 00)]; //different days
 
             //Act
-            var tc = new TollCalculator();
-            int result = tc.GetTollFee(vehicle, date);
+            var tc = new TollCalculator(_configuration);
+            int result = tc.GetTollFeeNDates(vehicle, date);
 
             //Assert 
             Assert.AreEqual(-1, result);
         }
 
         [TestMethod]
-        public void GetTollFee2_OneDate_Returns9()
+        public void GetTollFeeNDates_EmptyConfigs_ReturnsNegative2()
         {
             //Arrange
             var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
             DateTime[] date = [new DateTime(2024, 1, 16, 6, 00, 00)]; //week day
 
             //Act
-            var tc = new TollCalculator();
-            int result = tc.GetTollFee(vehicle, date);
+            var tc = new TollCalculator(_emptyConfiguration);
+            int result = tc.GetTollFeeNDates(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(-2, result);
+        }
+
+        [TestMethod]
+        public void GetTollFeeNDates_OneDate_Returns9()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime[] date = [new DateTime(2024, 1, 16, 6, 00, 00)]; //week day
+
+            //Act
+            var tc = new TollCalculator(_configuration);
+            int result = tc.GetTollFeeNDates(vehicle, date);
 
             //Assert 
             Assert.AreEqual(9, result);
         }
 
         [TestMethod]
-        public void GetTollFee2_TwoDates_Returns31()
+        public void GetTollFeeNDates_TwoDates_Returns31()
         {
             //Arrange
             var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
             DateTime[] date = [new DateTime(2024, 1, 16, 7, 01, 00), new DateTime(2024, 1, 16, 6, 00, 00)]; //week days
 
             //Act
-            var tc = new TollCalculator();
-            int result = tc.GetTollFee(vehicle, date);
+            var tc = new TollCalculator(_configuration);
+            int result = tc.GetTollFeeNDates(vehicle, date);
 
             //Assert 
             Assert.AreEqual(9 + 22, result);
         }
 
         [TestMethod]
-        public void GetTollFee2_TwoDatesSameHour_Returns22()
+        public void GetTollFeeNDates_TwoDatesSameHour_Returns22()
         {
             //Arrange
             var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
             DateTime[] date = [new DateTime(2024, 1, 16, 6, 00, 00), new DateTime(2024, 1, 16, 7, 00, 00)]; //week days
 
             //Act
-            var tc = new TollCalculator();
-            int result = tc.GetTollFee(vehicle, date);
+            var tc = new TollCalculator(_configuration);
+            int result = tc.GetTollFeeNDates(vehicle, date);
 
             //Assert 
             Assert.AreEqual(22, result);
         }
 
         [TestMethod]
-        public void GetTollFee2_Exceedes60_Returns60()
+        public void GetTollFeeNDates_Exceedes60_Returns60()
         {
             //Arrange
             var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
@@ -399,8 +425,8 @@ namespace TollCalculatorUTs
             ]; //week days
 
             //Act
-            var tc = new TollCalculator();
-            int result = tc.GetTollFee(vehicle, date);
+            var tc = new TollCalculator(_configuration);
+            int result = tc.GetTollFeeNDates(vehicle, date);
 
             //Assert 
             Assert.AreEqual(60, result);

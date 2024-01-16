@@ -7,7 +7,7 @@ namespace TollFeeCalculator
 {
     public interface ITollCalculator
     {
-        public int GetTollFee(Vehicle vehicle, DateTime[] dates);
+        public int GetTollFeeNDates(Vehicle vehicle, DateTime[] dates);
         public int GetTollFee(Vehicle vehicle, DateTime date);
     }
 }

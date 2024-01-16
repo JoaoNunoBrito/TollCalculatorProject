@@ -1,15 +1,14 @@
 ﻿using PublicHoliday;
-using System;
-using System.Globalization;
 using TollFeeCalculator.Entities;
 using TollFeeCalculator.Vehicles;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using static TollFeeCalculator.Entities.Enums.VehicleEnums;
+using Microsoft.Extensions.Configuration;
 
 namespace TollFeeCalculator
 {
     public class TollCalculator : ITollCalculator
     {
+        private readonly IConfiguration _configuration;
         // Define the time ranges and corresponding prices (startTimeSpan, endTimeSpan, Price)
         private readonly List<TimePriceRange> _priceRanges = new List<TimePriceRange>
         {
@@ -26,8 +25,9 @@ namespace TollFeeCalculator
             new TimePriceRange(new TimeSpan(0, 0, 0), new TimeSpan(5, 59, 59), 0)
         };
 
-        public TollCalculator()
+        public TollCalculator(IConfiguration configuration)
         {
+            _configuration = configuration;
         }
 
         /**
@@ -37,7 +37,7 @@ namespace TollFeeCalculator
          * @param dates   - date and time of all passes on one day
          * @return - the total toll fee for that day
          */
-        public int GetTollFee(Vehicle vehicle, DateTime[] dates)
+        public int GetTollFeeNDates(Vehicle vehicle, DateTime[] dates)
         {
             //Check if all dates are the same day
             if (!dates.All(dt => dt.Date == dates[0].Date))
@@ -69,7 +69,11 @@ namespace TollFeeCalculator
             }
 
             //Check if fee does not exceed maximum daily fee
-            if (totalFee > 60) totalFee = 60;
+            string? maxFeeConfig = _configuration.GetSection("MaxFeeAmount").Value;
+            if (string.IsNullOrWhiteSpace(maxFeeConfig)) return -2;
+            int maxFeeAmount = Int32.Parse(maxFeeConfig);
+
+            if (totalFee > maxFeeAmount) totalFee = maxFeeAmount;
 
             return totalFee;
         }
