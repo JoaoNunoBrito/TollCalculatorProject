@@ -16,8 +16,11 @@ namespace TollCalculatorUTs
         [TestInitialize()]
         public void TestInitialize()
         {
-            var inMemorySettings = new Dictionary<string, string> { {"MaxFeeAmount", "60"} };
-            _configuration = new ConfigurationBuilder() .AddInMemoryCollection(inMemorySettings).Build();
+            var inMemorySettings = new Dictionary<string, string> {
+                { "MaxFeeAmount", "60" },
+                { "MinTimeBetweenCharges",  "60" }
+            };
+            _configuration = new ConfigurationBuilder().AddInMemoryCollection(inMemorySettings).Build();
             var emptyInMemorySettings = new Dictionary<string, string> { };
             _emptyConfiguration = new ConfigurationBuilder().AddInMemoryCollection(emptyInMemorySettings).Build();
         }

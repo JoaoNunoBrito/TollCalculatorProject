@@ -5,9 +5,5 @@ namespace TollFeeCalculator.Vehicles
     public class Vehicle
     {
         public VehicleTypeEnum VehicleType { get; set; }
-        public VehicleTypeEnum GetVehicleType()
-        {
-            return VehicleType;
-        }
     }
 }

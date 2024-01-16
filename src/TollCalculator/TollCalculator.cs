@@ -3,6 +3,7 @@ using TollFeeCalculator.Entities;
 using TollFeeCalculator.Vehicles;
 using static TollFeeCalculator.Entities.Enums.VehicleEnums;
 using Microsoft.Extensions.Configuration;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TollFeeCalculator
 {
@@ -30,18 +31,28 @@ namespace TollFeeCalculator
             _configuration = configuration;
         }
 
-        /**
-         * Calculate the total toll fee for one day
-         *
-         * @param vehicle - the vehicle
-         * @param dates   - date and time of all passes on one day
-         * @return - the total toll fee for that day
-         */
+        /// <summary>
+        /// Calculate the total toll fee for one day
+        /// </summary>
+        /// <param name="vehicle">The vehicle</param>
+        /// <param name="dates">Date and time of all passes on one day</param>
+        /// <returns> 
+        /// The total toll fee for that day OR -1 if the dates are in different days, -2 if MinTimeBetweenChargesConfig not found, -3 if MaxFeeAmountConfig not found 
+        /// </returns>
         public int GetTollFeeNDates(Vehicle vehicle, DateTime[] dates)
         {
             //Check if all dates are the same day
             if (!dates.All(dt => dt.Date == dates[0].Date))
                 return -1;
+
+            //Get Configs
+            string? minTimeBetweenChargesConfig = _configuration.GetSection("MinTimeBetweenCharges").Value;
+            if (string.IsNullOrWhiteSpace(minTimeBetweenChargesConfig)) return -2;
+            int minTimeBetweenCharges = Int32.Parse(minTimeBetweenChargesConfig);
+
+            string? maxFeeConfig = _configuration.GetSection("MaxFeeAmount").Value;
+            if (string.IsNullOrWhiteSpace(maxFeeConfig)) return -3;
+            int maxFeeAmount = Int32.Parse(maxFeeConfig);
 
             //Ensure dates are ordered correctly
             dates = dates.OrderBy(d => d.TimeOfDay).ToArray();
@@ -56,7 +67,8 @@ namespace TollFeeCalculator
                 TimeSpan ts = date - intervalStart;
                 double minutes = ts.TotalMinutes;
 
-                if (minutes <= 60)
+
+                if (minutes <= minTimeBetweenCharges)
                 {
                     if (totalFee > 0) totalFee -= tempFee;
                     if (nextFee >= tempFee) tempFee = nextFee; //Choose highest of the fees
@@ -69,15 +81,19 @@ namespace TollFeeCalculator
             }
 
             //Check if fee does not exceed maximum daily fee
-            string? maxFeeConfig = _configuration.GetSection("MaxFeeAmount").Value;
-            if (string.IsNullOrWhiteSpace(maxFeeConfig)) return -2;
-            int maxFeeAmount = Int32.Parse(maxFeeConfig);
-
             if (totalFee > maxFeeAmount) totalFee = maxFeeAmount;
 
             return totalFee;
         }
 
+        /// <summary>
+        /// Calculate the toll fee for one pass
+        /// </summary>
+        /// <param name="vehicle">The vehicle</param>
+        /// <param name="date">Date and time of the pass</param>
+        /// <returns> 
+        /// the toll fee for that pass
+        /// </returns>
         public int GetTollFee(Vehicle vehicle, DateTime date)
         {
             //Free days/vehicles
@@ -94,7 +110,8 @@ namespace TollFeeCalculator
         private static bool IsTollFreeVehicle(VehicleTypeEnum vehicleType)
         {
             //Check if vehicleType is in whitelist
-            if (Enum.IsDefined(typeof(TollFreeVehicles), vehicleType.ToString())) return true;
+            if (Enum.IsDefined(typeof(TollFreeVehicles), vehicleType.ToString()))
+                return true;
 
             //Pay if not on whitelist
             return false;
