@@ -1,5 +1,6 @@
 using Castle.Core.Configuration;
 using Moq;
+using System.Reflection;
 using TollFeeCalculator;
 using TollFeeCalculator.Entities.Interfaces;
 using TollFeeCalculator.Vehicles;
@@ -10,24 +11,18 @@ namespace TollCalculatorUTs
     [TestClass]
     public class TollCalculatorUTs
     {
-        //private Mock<IVehicle> _vehicle;
-
-        //[TestInitialize()]
-        //public void TestInitialize()
-        //{
-        //    _vehicle = new Mock<IVehicle>();
-        //}
-
         #region IsTollFreeVehicle
 
         [TestMethod]
         public void IsTollFreeVehicle_InvalidEnum_ReturnsFalse()
         {
             //Arrange
+            Type type = typeof(TollCalculator);
+            MethodInfo method = type.GetMethod("IsTollFreeVehicle", BindingFlags.NonPublic | BindingFlags.Static);
             var vehicle = (VehicleTypeEnum)999;
 
             //Act
-            bool result = TollCalculator.IsTollFreeVehicle(vehicle);
+            bool result = (bool)method.Invoke(null, new object[] { vehicle });
 
             //Assert 
             Assert.IsTrue(result == false);
@@ -37,10 +32,12 @@ namespace TollCalculatorUTs
         public void IsTollFreeVehicle_Car_ReturnsFalse()
         {
             //Arrange
+            Type type = typeof(TollCalculator);
+            MethodInfo method = type.GetMethod("IsTollFreeVehicle", BindingFlags.NonPublic | BindingFlags.Static);
             var vehicle = VehicleTypeEnum.Car;
 
             //Act
-            bool result = TollCalculator.IsTollFreeVehicle(vehicle);
+            bool result = (bool)method.Invoke(null, new object[] { vehicle });
 
             //Assert 
             Assert.IsTrue(result == false);
@@ -50,10 +47,12 @@ namespace TollCalculatorUTs
         public void IsTollFreeVehicle_Motorbike_ReturnsTrue()
         {
             //Arrange
+            Type type = typeof(TollCalculator);
+            MethodInfo method = type.GetMethod("IsTollFreeVehicle", BindingFlags.NonPublic | BindingFlags.Static);
             var vehicle = VehicleTypeEnum.Motorbike;
 
             //Act
-            bool result = TollCalculator.IsTollFreeVehicle(vehicle);
+            bool result = (bool)method.Invoke(null, new object[] { vehicle });
 
             //Assert 
             Assert.IsTrue(result == true);
@@ -67,10 +66,12 @@ namespace TollCalculatorUTs
         public void IsTollFreeDate_WeekDay_ReturnsFalse()
         {
             //Arrange
+            Type type = typeof(TollCalculator);
+            MethodInfo method = type.GetMethod("IsTollFreeDate", BindingFlags.NonPublic | BindingFlags.Static);
             var date = new DateTime(2024, 1, 16); //Tuesday
 
             //Act
-            bool result = TollCalculator.IsTollFreeDate(date);
+            bool result = (bool)method.Invoke(null, new object[] { date });
 
             //Assert 
             Assert.IsTrue(result == false);
@@ -80,10 +81,12 @@ namespace TollCalculatorUTs
         public void IsTollFreeDate_WeekendDay_ReturnsTrue()
         {
             //Arrange
+            Type type = typeof(TollCalculator);
+            MethodInfo method = type.GetMethod("IsTollFreeDate", BindingFlags.NonPublic | BindingFlags.Static);
             var date = new DateTime(2024, 1, 20); //Saturday
 
             //Act
-            bool result = TollCalculator.IsTollFreeDate(date);
+            bool result = (bool)method.Invoke(null, new object[] { date });
 
             //Assert 
             Assert.IsTrue(result == true);
@@ -93,10 +96,12 @@ namespace TollCalculatorUTs
         public void IsTollFreeDate_Holiday_ReturnsTrue()
         {
             //Arrange
+            Type type = typeof(TollCalculator);
+            MethodInfo method = type.GetMethod("IsTollFreeDate", BindingFlags.NonPublic | BindingFlags.Static);
             var date = new DateTime(2024, 12, 25); //Holiday
 
             //Act
-            bool result = TollCalculator.IsTollFreeDate(date);
+            bool result = (bool)method.Invoke(null, new object[] { date });
 
             //Assert 
             Assert.IsTrue(result == true);
@@ -104,23 +109,217 @@ namespace TollCalculatorUTs
 
         #endregion
 
-        #region Basic interval test
+        #region GetTollFee
 
-        //[TestMethod]
-        //public void GetTollFee_BasicInterval_Success()
-        //{
-        //    //Arrange
-        //    var vehicle = new Mock<IVehicle>();
-        //    vehicle.Setup(x => x.GetVehicleType()).Returns(VehicleTypeEnum.Car);
-        //    DateTime[] dates = [new DateTime(2024, 1, 16, 6, 0, 0)];
+        [TestMethod]
+        public void GetTollFee_TollFreeDate_Returns0()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 12, 25, 6, 0, 0); //holiday
 
-        //    //Act
-        //    var tc = new TollCalculator();
-        //    int result = tc.GetTollFee(vehicle.Object, dates);
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
 
-        //    //Assert 
-        //    Assert.IsTrue(result == 0);
-        //}
+            //Assert 
+            Assert.AreEqual(result, 0);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TollFreeDate2_Returns0()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 1, 20, 6, 0, 0); //weekend
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 0);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TollFreeVehicle_Returns0()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Emergency };
+            DateTime date = new DateTime(2024, 1, 16, 6, 0, 0); //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 0);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TimePriceRangeNotFound_Returns0()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 1, 16, 5, 59, 59, 100); //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 0);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TimePriceRange1_Returns9()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 1, 16, 6, 0, 0); //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 9);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TimePriceRange2_Returns16()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 1, 16, 6, 30, 0); //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 16);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TimePriceRange3_Returns22()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 1, 16, 7, 00, 0); //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 22);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TimePriceRange4_Returns16()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 1, 16, 8, 00, 0); //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 16);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TimePriceRange5_Returns9()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 1, 16, 8, 30, 0); //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 9);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TimePriceRange6_Returns16()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 1, 16, 15, 00, 0); //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 16);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TimePriceRange7_Returns22()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 1, 16, 15, 30, 0); //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 22);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TimePriceRange8_Returns16()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 1, 16, 17, 00, 0); //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 16);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TimePriceRange9_Returns9()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 1, 16, 18, 00, 0); //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 9);
+        }
+
+        [TestMethod]
+        public void GetTollFee_TimePriceRange10_Returns0()
+        {
+            //Arrange
+            var vehicle = new Vehicle() { VehicleType = VehicleTypeEnum.Car };
+            DateTime date = new DateTime(2024, 1, 16, 18, 30, 0); //week day
+
+            //Act
+            var tc = new TollCalculator();
+            int result = tc.GetTollFee(vehicle, date);
+
+            //Assert 
+            Assert.AreEqual(result, 0);
+        }
 
         #endregion
     }

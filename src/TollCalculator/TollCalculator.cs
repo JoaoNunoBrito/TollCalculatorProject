@@ -1,14 +1,31 @@
 ﻿using PublicHoliday;
-using System;
-using TollFeeCalculator.Entities.Interfaces;
+using TollFeeCalculator.Entities;
 using TollFeeCalculator.Vehicles;
 using static TollFeeCalculator.Entities.Enums.VehicleEnums;
 
 namespace TollFeeCalculator
 {
-    public class TollCalculator
+    public class TollCalculator : ITollCalculator
     {
-        public TollCalculator() { }
+        // Define the time ranges and corresponding prices (startTimeSpan, endTimeSpan, Price)
+        private readonly List<TimePriceRange> _priceRanges = new List<TimePriceRange>
+        {
+            new TimePriceRange(new TimeSpan(6, 0, 0), new TimeSpan(6, 29, 59), 9),
+            new TimePriceRange(new TimeSpan(6, 30, 0), new TimeSpan(6, 59, 59), 16),
+            new TimePriceRange(new TimeSpan(7, 0, 0), new TimeSpan(7, 59, 59), 22),
+            new TimePriceRange(new TimeSpan(8, 0, 0), new TimeSpan(8, 29, 59), 16),
+            new TimePriceRange(new TimeSpan(8, 30, 0), new TimeSpan(14, 59, 59), 9),
+            new TimePriceRange(new TimeSpan(15, 0, 0), new TimeSpan(15, 29, 59), 16),
+            new TimePriceRange(new TimeSpan(15, 30, 0), new TimeSpan(16, 59, 59), 22),
+            new TimePriceRange(new TimeSpan(17, 0, 0), new TimeSpan(17, 59, 59), 16),
+            new TimePriceRange(new TimeSpan(18, 0, 0), new TimeSpan(18, 29, 59), 9),
+            new TimePriceRange(new TimeSpan(18, 30, 0), new TimeSpan(23, 59, 59), 0),
+            new TimePriceRange(new TimeSpan(0, 0, 0), new TimeSpan(5, 59, 59), 0)
+        };
+
+        public TollCalculator()
+        {
+        }
 
         /**
          * Calculate the total toll fee for one day
@@ -23,8 +40,8 @@ namespace TollFeeCalculator
             int totalFee = 0;
             foreach (DateTime date in dates)
             {
-                int nextFee = GetTollFee(date, vehicle);
-                int tempFee = GetTollFee(intervalStart, vehicle);
+                int nextFee = GetTollFee(vehicle, date);
+                int tempFee = GetTollFee(vehicle, intervalStart);
 
                 long diffInMillies = date.Millisecond - intervalStart.Millisecond;
                 long minutes = diffInMillies / 1000 / 60;
@@ -47,28 +64,20 @@ namespace TollFeeCalculator
             return totalFee;
         }
 
-        public int GetTollFee(DateTime date, Vehicle vehicle)
+        public int GetTollFee(Vehicle vehicle, DateTime date)
         {
+            //Free days/vehicles
             if (IsTollFreeDate(date) || IsTollFreeVehicle(vehicle.VehicleType)) return 0;
 
-            int hour = date.Hour;
-            int minute = date.Minute;
+            //Find the applicable price range
+            var applicableRange = _priceRanges.FirstOrDefault(range => date.TimeOfDay >= range.Start && date.TimeOfDay <= range.End);
 
-            if (hour == 6 && minute >= 0 && minute <= 29) return 9;
-            else if (hour == 6 && minute >= 30 && minute <= 59) return 16;
-            else if (hour == 7 && minute >= 0 && minute <= 59) return 22;
-            else if (hour == 8 && minute >= 0 && minute < 29) return 16;
-            else if (hour >= 8 && hour <= 14 && minute >= 30 && minute <= 59) return 9;
-            else if (hour == 15 && minute >= 0 && minute <= 29) return 16;
-            else if (hour == 15 && minute >= 0 || hour == 16 && minute <= 59) return 22;
-            else if (hour == 17 && minute >= 0 && minute <= 59) return 16;
-            else if (hour == 18 && minute >= 0 && minute <= 29) return 8;
-            else return 0;
+            return applicableRange != null ? applicableRange.Price : 0;
         }
 
         #region Helpers
 
-        public static bool IsTollFreeVehicle(VehicleTypeEnum vehicleType)
+        private static bool IsTollFreeVehicle(VehicleTypeEnum vehicleType)
         {
             //Check if vehicleType is in whitelist
             if (Enum.IsDefined(typeof(TollFreeVehicles), vehicleType.ToString())) return true;
@@ -77,13 +86,13 @@ namespace TollFeeCalculator
             return false;
         }
 
-        public static bool IsTollFreeDate(DateTime date)
+        private static bool IsTollFreeDate(DateTime date)
         {
             //Check if it's weekend
             int year = date.Year;
             int month = date.Month;
             int day = date.Day;
-            if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) 
+            if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
                 return true;
 
             //Check if it's holiday
