@@ -1,5 +1,6 @@
 ﻿using System;
 using TollFeeCalculator.Entities.Interfaces;
+using TollFeeCalculator.Vehicles;
 using static TollFeeCalculator.Entities.Enums.VehicleEnums;
 
 namespace TollFeeCalculator
@@ -15,7 +16,7 @@ namespace TollFeeCalculator
          * @param dates   - date and time of all passes on one day
          * @return - the total toll fee for that day
          */
-        public int GetTollFee(IVehicle vehicle, DateTime[] dates)
+        public int GetTollFee(Vehicle vehicle, DateTime[] dates)
         {
             DateTime intervalStart = dates[0];
             int totalFee = 0;
@@ -45,21 +46,9 @@ namespace TollFeeCalculator
             return totalFee;
         }
 
-        private static bool IsTollFreeVehicle(IVehicle vehicle)
+        public int GetTollFee(DateTime date, Vehicle vehicle)
         {
-            if (vehicle == null) return false;
-
-            //Check if vehicleType is in whitelist
-            VehicleTypeEnum vehicleType = vehicle.GetVehicleType();
-            if (Enum.IsDefined(typeof(TollFreeVehicles), vehicleType)) return true;
-
-            //Pay if not on whitelist
-            return false;
-        }
-
-        public int GetTollFee(DateTime date, IVehicle vehicle)
-        {
-            if (IsTollFreeDate(date) || IsTollFreeVehicle(vehicle)) return 0;
+            if (IsTollFreeDate(date) || IsTollFreeVehicle(vehicle.VehicleType)) return 0;
 
             int hour = date.Hour;
             int minute = date.Minute;
@@ -76,7 +65,18 @@ namespace TollFeeCalculator
             else return 0;
         }
 
-        private Boolean IsTollFreeDate(DateTime date)
+        #region Helpers
+
+        public static bool IsTollFreeVehicle(VehicleTypeEnum vehicleType)
+        {
+            //Check if vehicleType is in whitelist
+            if (Enum.IsDefined(typeof(TollFreeVehicles), vehicleType.ToString())) return true;
+
+            //Pay if not on whitelist
+            return false;
+        }
+
+        public Boolean IsTollFreeDate(DateTime date)
         {
             int year = date.Year;
             int month = date.Month;
@@ -100,5 +100,7 @@ namespace TollFeeCalculator
             }
             return false;
         }
+
+        #endregion
     }
 }

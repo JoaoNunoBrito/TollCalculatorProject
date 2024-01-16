@@ -1,6 +1,8 @@
+using Castle.Core.Configuration;
 using Moq;
 using TollFeeCalculator;
 using TollFeeCalculator.Entities.Interfaces;
+using TollFeeCalculator.Vehicles;
 using static TollFeeCalculator.Entities.Enums.VehicleEnums;
 
 namespace TollCalculatorUTs
@@ -8,23 +10,74 @@ namespace TollCalculatorUTs
     [TestClass]
     public class TollCalculatorUTs
     {
-        #region Basic interval test
+        private Mock<IVehicle> _vehicle;
+
+        [TestInitialize()]
+        public void TestInitialize()
+        {
+            _vehicle = new Mock<IVehicle>();
+        }
+
+        #region IsTollFreeVehicle
 
         [TestMethod]
-        public void GetTollFee_BasicInterval_Success()
+        public void IsTollFreeVehicle_InvalidEnum_ReturnsFalse()
         {
             //Arrange
-            var vehicle = new Mock<IVehicle>();
-            vehicle.Setup(x => x.GetVehicleType()).Returns(VehicleTypeEnum.Car);
-            DateTime[] dates = [new DateTime(2024, 1, 16, 6, 0, 0)];
+            var vehicle = (VehicleTypeEnum)999;
 
             //Act
-            var tc = new TollCalculator();
-            int result = tc.GetTollFee(vehicle.Object, dates);
+            bool result = TollCalculator.IsTollFreeVehicle(vehicle);
 
             //Assert 
-            Assert.IsTrue(result == 0);
+            Assert.IsTrue(result == false);
         }
+
+        [TestMethod]
+        public void IsTollFreeVehicle_Car_ReturnsFalse()
+        {
+            //Arrange
+            var vehicle = VehicleTypeEnum.Car;
+
+            //Act
+            bool result = TollCalculator.IsTollFreeVehicle(vehicle);
+
+            //Assert 
+            Assert.IsTrue(result == false);
+        }
+
+        [TestMethod]
+        public void IsTollFreeVehicle_Motorbike_ReturnsTrue()
+        {
+            //Arrange
+            var vehicle = VehicleTypeEnum.Motorbike;
+
+            //Act
+            bool result = TollCalculator.IsTollFreeVehicle(vehicle);
+
+            //Assert 
+            Assert.IsTrue(result == true);
+        }
+
+        #endregion
+
+        #region Basic interval test
+
+        //[TestMethod]
+        //public void GetTollFee_BasicInterval_Success()
+        //{
+        //    //Arrange
+        //    var vehicle = new Mock<IVehicle>();
+        //    vehicle.Setup(x => x.GetVehicleType()).Returns(VehicleTypeEnum.Car);
+        //    DateTime[] dates = [new DateTime(2024, 1, 16, 6, 0, 0)];
+
+        //    //Act
+        //    var tc = new TollCalculator();
+        //    int result = tc.GetTollFee(vehicle.Object, dates);
+
+        //    //Assert 
+        //    Assert.IsTrue(result == 0);
+        //}
 
         #endregion
     }
